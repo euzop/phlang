@@ -18,6 +18,8 @@ KEYWORDS = {
     'idikta': TokenType.KEYWORD,    # print
     'habang': TokenType.KEYWORD,    # while
     'para': TokenType.KEYWORD,      # for
+    'sa': TokenType.KEYWORD,        # in
+    'saklaw': TokenType.KEYWORD,    # range
     'bumalik': TokenType.KEYWORD,   # return
     'itigil': TokenType.KEYWORD,    # break
     'ituloy': TokenType.KEYWORD,    # continue
@@ -44,9 +46,9 @@ OPERATORS = {
     '>': TokenType.OPERATOR,
     '<=': TokenType.OPERATOR,
     '>=': TokenType.OPERATOR,
-    'and': TokenType.OPERATOR,
-    'or': TokenType.OPERATOR,
-    'not': TokenType.OPERATOR,
+    'at': TokenType.OPERATOR,
+    'o': TokenType.OPERATOR,
+    'hindi': TokenType.OPERATOR,
 }
 
 # Define delimiters for PHLang
@@ -73,5 +75,4 @@ class Token:
     def __repr__(self):
         return f"Token({self.type}, '{self.value}', line={self.line}, col={self.column})"
 
-# Export token types and constants
 __all__ = ['TokenType', 'Token', 'KEYWORDS', 'OPERATORS', 'DELIMITERS']

@@ -6,7 +6,7 @@ from .ast import (
     FunctionDefinition, FunctionCall, ReturnStatement,
     IfStatement, WhileLoop, ForLoop, 
     PrintStatement, BreakStatement, ContinueStatement,
-    Block, TryExcept
+    Block, TryExcept, ArrayLiteral, ArrayIndexing
 )
 
 class Parser:
@@ -90,11 +90,25 @@ class Parser:
         self.expect(TokenType.DELIMITER, '{')
         statements = []
         
-        while self.current_token is not None and self.current_token.type != TokenType.DELIMITER and self.current_token.value != '}':
+        while self.current_token is not None and not (self.current_token.type == TokenType.DELIMITER and self.current_token.value == '}'):
             statements.append(self.statement())
-        
+    
         self.expect(TokenType.DELIMITER, '}')
         return Block(statements)
+
+    def array_literal(self):
+        self.expect(TokenType.DELIMITER, '[')
+        elements = []
+        
+        if self.current_token.type != TokenType.DELIMITER or self.current_token.value != ']':
+            elements.append(self.expression())
+            
+            while self.current_token.type == TokenType.DELIMITER and self.current_token.value == ',':
+                self.next_token()
+                elements.append(self.expression())
+        
+        self.expect(TokenType.DELIMITER, ']')
+        return ArrayLiteral(elements)
 
     def function_definition(self):
         self.expect(TokenType.KEYWORD, 'paraan')
@@ -157,13 +171,36 @@ class Parser:
 
     def for_loop(self):
         self.expect(TokenType.KEYWORD, 'para')
-        variable = self.expect(TokenType.IDENTIFIER).value
         
-        self.expect(TokenType.KEYWORD, 'in')
-        iterable = self.expression()
+        if self.current_token.type == TokenType.IDENTIFIER:
+            variable = self.expect(TokenType.IDENTIFIER).value
+            
+            if self.current_token.type == TokenType.KEYWORD and self.current_token.value == 'sa':
+                self.next_token()
+                iterable = self.expression()
+                body = self.block()
+                return ForLoop(variable, iterable, body)
+            elif self.current_token.type == TokenType.KEYWORD and self.current_token.value == 'in':
+                self.next_token()
+                iterable = self.expression()
+                body = self.block()
+                return ForLoop(variable, iterable, body)
+            elif self.current_token.type == TokenType.OPERATOR and self.current_token.value == '=':
+                self.next_token()
+                init_value = self.expression()
+                init = Assignment(variable, init_value)
+                
+                self.expect(TokenType.DELIMITER, ';')
+                condition = self.expression()
+                self.expect(TokenType.DELIMITER, ';')
+                update = self.expression()
+                
+                body = self.block()
+                
+                loop_body = Block(body.statements + [update])
+                return WhileLoop(condition, loop_body, init)
         
-        body = self.block()
-        return ForLoop(variable, iterable, body)
+        self.error("Invalid for loop syntax")
 
     def return_statement(self):
         self.expect(TokenType.KEYWORD, 'bumalik')
@@ -208,7 +245,9 @@ class Parser:
         try_block = self.block()
         
         self.expect(TokenType.KEYWORD, 'saluhin')
+        self.expect(TokenType.DELIMITER, '(')
         exception_var = self.expect(TokenType.IDENTIFIER).value
+        self.expect(TokenType.DELIMITER, ')')
         except_block = self.block()
         
         return TryExcept(try_block, exception_var, except_block)
@@ -230,7 +269,7 @@ class Parser:
     def logical_or(self):
         node = self.logical_and()
         
-        while self.current_token is not None and self.current_token.type == TokenType.OPERATOR and self.current_token.value == 'or':
+        while self.current_token is not None and self.current_token.type == TokenType.OPERATOR and self.current_token.value == 'o':
             op = self.current_token.value
             self.next_token()
             right = self.logical_and()
@@ -241,7 +280,7 @@ class Parser:
     def logical_and(self):
         node = self.equality()
         
-        while self.current_token is not None and self.current_token.type == TokenType.OPERATOR and self.current_token.value == 'and':
+        while self.current_token is not None and self.current_token.type == TokenType.OPERATOR and self.current_token.value == 'at':
             op = self.current_token.value
             self.next_token()
             right = self.equality()
@@ -299,7 +338,7 @@ class Parser:
 
     def unary(self):
         if self.current_token is not None and self.current_token.type == TokenType.OPERATOR:
-            if self.current_token.value in ('-', 'not'):
+            if self.current_token.value in ('-', 'hindi'):
                 op = self.current_token.value
                 self.next_token()
                 operand = self.unary()
@@ -318,12 +357,31 @@ class Parser:
             self.next_token()
             return String(token.value)
         
+        elif token.type == TokenType.DELIMITER and token.value == '[':
+            return self.array_literal()
+            
         elif token.type == TokenType.IDENTIFIER:
-            if self.peek_token() and self.peek_token().type == TokenType.DELIMITER and self.peek_token().value == '(':
-                return self.function_call()
-            else:
-                self.next_token()
-                return Identifier(token.value)
+            self.next_token()
+            
+            if self.current_token and self.current_token.type == TokenType.DELIMITER:
+                if self.current_token.value == '[':
+                    self.next_token()
+                    index = self.expression()
+                    self.expect(TokenType.DELIMITER, ']')
+                    return ArrayIndexing(Identifier(token.value), index)
+                elif self.current_token.value == '(':
+                    self.position -= 1
+                    self.current_token = self.tokens[self.position]
+                    return self.function_call()
+                
+            return Identifier(token.value)
+        
+        elif token.type == TokenType.KEYWORD and token.value == 'saklaw':
+            self.next_token() 
+            self.expect(TokenType.DELIMITER, '(')
+            arguments = self.argument_list()
+            self.expect(TokenType.DELIMITER, ')')
+            return FunctionCall('saklaw', arguments)
         
         elif token.type == TokenType.DELIMITER and token.value == '(':
             self.next_token()

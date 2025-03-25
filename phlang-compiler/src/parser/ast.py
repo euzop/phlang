@@ -74,6 +74,25 @@ class Identifier(Expression):
         return self.name
 
 
+class ArrayLiteral(Expression):
+    def __init__(self, elements):
+        super().__init__('ArrayLiteral', elements)
+        self.elements = elements
+
+    def __repr__(self):
+        return f"[{', '.join(str(e) for e in self.elements)}]"
+
+
+class ArrayIndexing(Expression):
+    def __init__(self, array, index):
+        super().__init__('ArrayIndexing', [array, index])
+        self.array = array
+        self.index = index
+
+    def __repr__(self):
+        return f"{self.array}[{self.index}]"
+
+
 class VariableDeclaration(Statement):
     def __init__(self, var_name, var_type, initial_value=None):
         children = [var_name, var_type]

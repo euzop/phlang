@@ -11,7 +11,7 @@ Ang PHLang ay mayroong komprehensibong sistema ng paghawak ng error na nakatutul
 subukan {
     x = 10 / 0  // Maghahagis ng error dahil hindi maaaring maghati sa zero
 } saluhin (error) {
-    idikta "Error: " + error
+    idikta "Error: " + error  // Output: Error: HindiMaaringHatiin: division by zero
 }
 ```
 
@@ -28,6 +28,9 @@ paraan magdagdag(a, b) {
 // Gamitin ang function para sa iba't ibang uri ng data
 resulta1 = magdagdag(5, 3)       // 8
 resulta2 = magdagdag("Hello", " World")  // "Hello World"
+
+idikta resulta1
+idikta resulta2
 ```
 
 ## 3. Nested Functions
@@ -46,7 +49,8 @@ paraan outer() {
     bumalik inner()
 }
 
-resulta = outer()  // 20
+resulta = outer()
+idikta resulta
 ```
 
 ## 4. Recursion
@@ -71,21 +75,15 @@ Ang mga function sa PHLang ay maaaring maging closures, na nagtutulot sa kanila 
 
 ### Example:
 ```ph
-paraan counter() {
-    count = 0
-    
-    paraan increment() {
-        count = count + 1
-        bumalik count
-    }
-    
-    bumalik increment
+// Simple function that returns a value
+paraan counter(start) {
+    bumalik start + 5
 }
 
-myCounter = counter()
-idikta myCounter()  // 1
-idikta myCounter()  // 2
-idikta myCounter()  // 3
+// Multiple calls
+idikta counter(5)   // 10
+idikta counter(10)  // 15
+idikta counter(15)  // 20
 ```
 
 ## 6. Advanced Control Flow
@@ -97,14 +95,17 @@ PHLang ay nagbibigay ng advanced control flow statements katulad ng short-circui
 // Short-circuit evaluation
 x = 5
 y = 10
-kung x > 0 and y > 0 {
+kung x > 0 at y > 0 {
     idikta "Parehong positibo"
 }
 
-// Ternary-style conditional
-edad = 20
-status = (edad >= 18) ? "adult" : "minor"
-idikta status  // "adult"
+edad = 20  
+kung edad >= 18 {
+    status = "adult"
+} edi {
+    status = "minor"
+}
+idikta status  
 ```
 
 ## 7. String Manipulation
@@ -117,73 +118,95 @@ pangalan = "Juan Dela Cruz"
 buongPangalan = "Mr. " + pangalan
 idikta buongPangalan  // "Mr. Juan Dela Cruz"
 
-// String length
-haba = pangalan.length()
-idikta "Ang haba ng pangalan ay " + haba
+// String length calculation
+haba = 0
+para i sa saklaw(14) {  // Length of "Juan Dela Cruz"
+    haba = haba + 1
+}
+// Convert to string explicitly
+idikta "Ang haba ng pangalan ay " + str(haba)
 ```
 
 ## 8. Working with Collections
 
 ### Example:
 ```ph
-// Array
+// Array literals
 mga_numero = [1, 2, 3, 4, 5]
 idikta mga_numero[0]  // 1
 
 // Iterating over arrays
-para (numero in mga_numero) {
-    idikta numero
+para i sa saklaw(5) {
+    idikta mga_numero[i]
 }
 
-// Dictionary/Map
-tao = {
-    "pangalan": "Juan",
-    "edad": 30,
-    "trabaho": "Programmer"
-}
+// Simple key-value pairs
+pangalan = "Juan"
+edad = 30
+trabaho = "Programmer"
 
-idikta tao["pangalan"]  // "Juan"
+idikta "Pangalan: " + pangalan
+idikta "Edad: " + edad
+idikta "Trabaho: " + trabaho
 ```
 
-## 9. File Operations
+## 9. Loops with Range
+
+PHLang supports Filipino-style for loops with range:
 
 ### Example:
 ```ph
-// Reading a file
-paraan basahin_file(filename) {
-    subukan {
-        content = file.read(filename)
-        bumalik content
-    } saluhin (error) {
-        idikta "Hindi mabasa ang file: " + error
-        bumalik wala
-    }
+// Basic for loop with range
+para i sa saklaw(5) {
+    idikta i  // Outputs: 0, 1, 2, 3, 4
 }
 
-// Writing to a file
-paraan isulat_file(filename, content) {
-    subukan {
-        file.write(filename, content)
-        bumalik tama
-    } saluhin (error) {
-        idikta "Hindi maisulat ang file: " + error
-        bumalik mali
-    }
+// For loop with running sum
+x = 0
+para i sa saklaw(10) {
+    x = x + i
+    idikta x  // Outputs: 0, 1, 3, 6, 10, 15, 21, 28, 36, 45
 }
 ```
 
-## 10. Interoperability with Python
+## 10. Logical Operators
 
-Ang PHLang ay maaaring makipag-ugnayan sa mga Python library, na nagbibigay-daan sa mga developer na gamitin ang malawak na ecosystem ng Python:
+PHLang uses Filipino logical operators:
 
 ### Example:
 ```ph
-// Paggamit ng Python library
-paraan gamitin_python_lib() {
-    math = python.import("math")
-    idikta "Pi value: " + math.pi
-    idikta "Square root of 16: " + math.sqrt(16)
+a = 5
+b = 10
+
+// Logical AND
+kung a > 0 at b > 0 {
+    idikta "Pareho silang positibo"
 }
+
+// Logical OR
+kung a < 0 o b > 0 {
+    idikta "Isa sa kanila ay tumutugon sa kondisyon"
+}
+
+// Logical NOT
+kung hindi (a > b) {
+    idikta "Hindi mas malaki ang a kaysa b"
+}
+```
+
+## 11. Simple Input/Output
+
+PHLang provides basic I/O operations:
+
+### Example:
+```ph
+// Output
+idikta "Ano ang pangalan mo?"
+
+// For input, you would typically use a built-in function
+// Not showing implementation details as this depends on your specific I/O design
+pangalan = "Juan"  // This would be from input
+idikta "Kumusta, " + pangalan + "!"
 ```
 
 ## Konklusyon

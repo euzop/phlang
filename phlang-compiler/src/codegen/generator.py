@@ -4,14 +4,16 @@ from ..parser.ast import (
     FunctionDefinition, FunctionCall, ReturnStatement,
     IfStatement, WhileLoop, ForLoop, 
     PrintStatement, BreakStatement, ContinueStatement,
-    Block, TryExcept
+    Block, TryExcept, ArrayLiteral, ArrayIndexing
 )
+from ..error.error_handler import translate_error
 
 class CodeGenerator:
     def __init__(self, ast):
         self.ast = ast
         self.indent_level = 0
         self.output = []
+        self.imports_added = False
     
     def indent(self):
         self.indent_level += 1
@@ -24,6 +26,8 @@ class CodeGenerator:
         self.output.append('    ' * self.indent_level + line)
     
     def generate(self):
+        self.write("from src.error.error_handler import translate_error")
+        self.write("")
         self.visit(self.ast)
         return '\n'.join(self.output)
     
@@ -39,8 +43,6 @@ class CodeGenerator:
                     self.visit(child)
     
     def visit_Program(self, node):
-        self.write("")
-        
         for statement in node.statements:
             self.visit(statement)
     
@@ -152,6 +154,7 @@ class CodeGenerator:
         
         self.write(f"except Exception as {node.exception_var}:")
         self.indent()
+        self.write(f"{node.exception_var} = translate_error({node.exception_var})")
         self.visit(node.except_block)
         self.dedent()
     
@@ -170,8 +173,8 @@ class CodeGenerator:
             right = self.generate_expression(node.right)
             
             op_map = {
-                'and': 'and',
-                'or': 'or',
+                'at': 'and',
+                'o': 'or',
                 '==': '==',
                 '!=': '!=',
                 '<': '<',
@@ -186,6 +189,14 @@ class CodeGenerator:
             }
             
             op = op_map.get(node.operator, node.operator)
+            
+            # Special case for string concatenation with +
+            if op == '+' and (
+                isinstance(node.left, String) or 
+                isinstance(node.right, String)
+            ):
+                return f"str({left}) + str({right})"
+            
             return f"({left} {op} {right})"
         
         elif isinstance(node, UnaryOp):
@@ -193,7 +204,7 @@ class CodeGenerator:
             
             op_map = {
                 '-': '-',
-                'not': 'not '
+                'hindi': 'not '
             }
             
             op = op_map.get(node.operator, node.operator)
@@ -201,7 +212,20 @@ class CodeGenerator:
         
         elif isinstance(node, FunctionCall):
             args = ", ".join(self.generate_expression(arg) for arg in node.arguments)
+            
+            if node.name == 'saklaw':
+                return f"range({args})"
+            
             return f"{node.name}({args})"
+        
+        elif isinstance(node, ArrayLiteral):
+            elements = ", ".join(self.generate_expression(element) for element in node.elements)
+            return f"[{elements}]"
+        
+        elif isinstance(node, ArrayIndexing):
+            array = self.generate_expression(node.array)
+            index = self.generate_expression(node.index)
+            return f"{array}[{index}]"
         
         else:
             return str(node)

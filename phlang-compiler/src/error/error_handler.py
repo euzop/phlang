@@ -13,6 +13,30 @@ class CompilerError(Exception):
         else:
             return f"Mali: {self.message}"
 
+ERROR_TRANSLATIONS = {
+    "ZeroDivisionError": "HindiMaaringHatiin",
+    "TypeError": "MaliSaUri",
+    "ValueError": "MaliSaHalaga",
+    "IndexError": "MaliSaIndex",
+    "NameError": "HindiNatuklasangPangalan",
+    "AttributeError": "MaliSaAttribute",
+    "SyntaxError": "MaliSaSyntax",
+    "RuntimeError": "MaliSaPagpapatupad",
+    "ImportError": "MaliSaPag-import",
+    "KeyError": "MaliSaSusi",
+    "FileNotFoundError": "HindiNatagpuanAngFile",
+    "PermissionError": "MaliSaPermiso",
+    "OverflowError": "LumagpasAngHalaga",
+    "MemoryError": "KulangsaMemorya",
+    "RecursionError": "LabisNaRecursion"
+}
+
+def translate_error(error):
+    error_type = type(error).__name__
+    if error_type in ERROR_TRANSLATIONS:
+        return f"{ERROR_TRANSLATIONS[error_type]}: {str(error)}"
+    return str(error)
+
 def report_error(error_message, line_number=None):
     if line_number is not None:
         print(f"Mali sa linya {line_number}: {error_message}")
@@ -44,7 +68,7 @@ def handle_return_error(expected_type, actual_type, line_number=None):
     report_error(f"Hindi tugma ang uri ng return: inaasahan ay '{expected_type}', ngunit '{actual_type}' ang nakuha", line_number)
 
 def handle_division_by_zero(line_number=None):
-    report_error("Paghahati sa zero", line_number)
+    report_error("HindiMaaringHatiin: Paghahati sa zero", line_number)
 
 def handle_invalid_operation(operator, types, line_number=None):
     report_error(f"Hindi wastong operasyon: ang '{operator}' ay hindi maaaring gamitin sa {types}", line_number)

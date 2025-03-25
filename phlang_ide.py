@@ -59,6 +59,36 @@ def compile_and_run(filename, args=None):
     except Exception as e:
         return f"Error: {str(e)}"
 
+class LineNumbers(tk.Canvas):
+    def __init__(self, parent, text_widget, **kwargs):
+        tk.Canvas.__init__(self, parent, **kwargs)
+        self.text_widget = text_widget
+        self.text_widget.bind('<KeyPress>', self.on_key_press)
+        self.text_widget.bind('<KeyRelease>', self.on_key_release)
+        self.text_widget.bind('<MouseWheel>', self.redraw)
+        self.text_widget.bind('<<Modified>>', self.redraw)
+        self.text_widget.bind('<Configure>', self.redraw)
+        self.redraw()
+
+    def on_key_press(self, event=None):
+        self.redraw()
+
+    def on_key_release(self, event=None):
+        self.redraw()
+
+    def redraw(self, event=None):
+        self.delete("all")
+        
+        i = self.text_widget.index("@0,0")
+        while True:
+            dline = self.text_widget.dlineinfo(i)
+            if dline is None: 
+                break
+            y = dline[1]
+            linenum = i.split(".")[0]
+            self.create_text(2, y, anchor="nw", text=linenum, fill="#999999", font=("Consolas", 11))
+            i = self.text_widget.index(f"{int(linenum) + 1}.0")
+
 class DarkScrolledText(scrolledtext.ScrolledText):
     def __init__(self, master=None, **kw):
         super().__init__(master, **kw)
@@ -67,6 +97,64 @@ class DarkScrolledText(scrolledtext.ScrolledText):
         scrollbar.configure(background="#333333", troughcolor="#1e1e1e", 
                            activebackground="#555555", borderwidth=0,
                            highlightbackground="#1e1e1e")
+
+class LineNumberedText(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        tk.Frame.__init__(self, parent)
+        self.bg = kwargs.get('bg', '#282c34')
+        self.fg = kwargs.get('fg', '#f8f8f2')
+        
+        self.text = DarkScrolledText(self, *args, **kwargs)
+        self.linenumbers = LineNumbers(self, self.text, width=35, 
+                                       bg="#21252b", highlightthickness=0)
+        
+        self.linenumbers.pack(side="left", fill="y")
+        self.text.pack(side="right", fill="both", expand=True)
+
+        self.text.bind("<Tab>", self.handle_tab)
+        self.text.bind("<Shift-Tab>", self.handle_shift_tab)
+        
+    def handle_tab(self, event):
+        # Insert 4 spaces instead of tab character
+        self.text.insert(tk.INSERT, "    ")
+        return 'break'  # Prevent default tab behavior
+        
+    def handle_shift_tab(self, event):
+        # Unindent current line
+        current_line = self.text.get("insert linestart", "insert lineend")
+        if current_line.startswith("    "):
+            self.text.delete("insert linestart", "insert linestart + 4c")
+        return 'break'  # Prevent default shift-tab behavior
+    
+    def get(self, *args, **kwargs):
+        return self.text.get(*args, **kwargs)
+        
+    def insert(self, *args, **kwargs):
+        return self.text.insert(*args, **kwargs)
+        
+    def delete(self, *args, **kwargs):
+        return self.text.delete(*args, **kwargs)
+        
+    def see(self, *args, **kwargs):
+        return self.text.see(*args, **kwargs)
+        
+    def index(self, *args, **kwargs):
+        return self.text.index(*args, **kwargs)
+        
+    def config(self, *args, **kwargs):
+        return self.text.config(*args, **kwargs)
+        
+    def configure(self, *args, **kwargs):
+        return self.text.configure(*args, **kwargs)
+        
+    def pack(self, *args, **kwargs):
+        super().pack(*args, **kwargs)
+        
+    def grid(self, *args, **kwargs):
+        super().grid(*args, **kwargs)
+        
+    def place(self, *args, **kwargs):
+        super().place(*args, **kwargs)
 
 class PHLangIDE:
     def __init__(self, root):
@@ -235,7 +323,9 @@ class PHLangIDE:
         editor_frame = ttk.LabelFrame(paned_window, text="PHLang Code Editor")
         paned_window.add(editor_frame, weight=3)  # Editor gets more space
         
-        self.code_editor = DarkScrolledText(editor_frame, wrap=tk.WORD, 
+        # Replace DarkScrolledText with LineNumberedText
+        self.code_editor = LineNumberedText(editor_frame, 
+                                          wrap=tk.WORD, 
                                           font=("Consolas", 11),
                                           bg=editor_bg, fg=editor_fg,
                                           insertbackground=editor_cursor,

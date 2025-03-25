@@ -41,6 +41,27 @@ class Lexer:
         if self.current_char == '\n':
             self.advance()
     
+    def skip_c_style_comment(self):
+        self.advance()  
+        self.advance()  
+        
+        while self.current_char is not None and self.current_char != '\n':
+            self.advance()
+        
+        if self.current_char == '\n':
+            self.advance()
+    
+    def skip_c_style_multiline_comment(self):
+        self.advance()  
+        self.advance()  
+        
+        while self.current_char is not None:
+            if self.current_char == '*' and self.peek() == '/':
+                self.advance() 
+                self.advance()  
+                break
+            self.advance()
+    
     def identifier(self):
         start_column = self.column
         result = ''
@@ -132,6 +153,14 @@ class Lexer:
             
             if self.current_char == '#':
                 self.skip_comment()
+                continue
+            
+            if self.current_char == '/' and self.peek() == '/':
+                self.skip_c_style_comment()
+                continue
+            
+            if self.current_char == '/' and self.peek() == '*':
+                self.skip_c_style_multiline_comment()
                 continue
             
             if self.current_char.isalpha() or self.current_char == '_':
