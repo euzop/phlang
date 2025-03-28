@@ -49,7 +49,7 @@ To get started with the PHLang compiler, follow these steps:
 
 1. **Clone the Repository**:
    ```
-   git clone https://github.com/euzop/phlang-compiler.git
+   git clone https://github.com/euzop/phlang.git
    cd phlang-compiler
    ```
 
