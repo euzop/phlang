@@ -1,4 +1,4 @@
-# PHLang Compiler
+# PHLang
 
  ![Image Alt](https://github.com/euzop/phlang/blob/c75a7858d352fae3e0123d6d13abb96dc5fcb16c/sample.png)
 PHLang (Philippine Language) is a programming language designed to make coding more accessible to Filipino speakers by using Filipino keywords and natural syntax while maintaining the power of modern programming languages. It serves as a bridge between natural Filipino language and computer programming, enabling Filipino developers to write code in their native language.
